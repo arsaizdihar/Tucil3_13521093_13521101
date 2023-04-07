@@ -138,7 +138,7 @@ function NormalPage({navigate}: {navigate: (path: string) => void}) {
         </> 
         }
       </div>
-      <div className="w-full h-full border border-gray-200 rounded mt-4 mb-5 bg-gray-800" ref={containerRef}>
+      <div className="w-full aspect-video border border-gray-200 rounded mt-4 mb-5 bg-gray-800" ref={containerRef}>
       </div>
     </div>
   )
