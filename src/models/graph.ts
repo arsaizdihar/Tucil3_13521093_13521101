@@ -62,8 +62,6 @@ export class Graph<TData, TWeight> {
             source: node.idString,
             target: key.toString(),
             weight: value.weight,
-            lineColor: value.isSolution ? 'red' : 'black',
-            width: value.isSolution ? 3 : 1,
             id: `${node.idString},${key.toString()}`,
           }
         })
