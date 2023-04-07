@@ -24,17 +24,20 @@ function NormalPage({navigate}: {navigate: (path: string) => void}) {
           selector: 'node',
           style: {
             label: 'data(label)',
+            backgroundColor: '#d1d5db',
+            'color': '#d1d5db'
           }
         },
         {
           selector: 'edge',
           style: {
             label: 'data(weight)',
+            'color': 'white',
             'curve-style': 'bezier',
             width: 1,
-            'line-color': 'black',
+            'line-color': 'white',
             'target-arrow-shape': 'triangle',
-            'target-arrow-color': 'black',
+            'target-arrow-color': 'white',
             'source-text-margin-y': 10,
             'text-valign': 'top',
             'text-margin-y': -10
@@ -67,10 +70,9 @@ function NormalPage({navigate}: {navigate: (path: string) => void}) {
 
 
   return (
-    <div className='h-screen w-full flex flex-col'>
-      <div className="">
-
-        <input ref={inputRef} type="file" accept='.txt, text/plain' onChange={e => {
+    <div className='h-screen w-full max-w-screen-lg mx-auto flex flex-col items-center'>
+      <div className="flex flex-col w-full max-w-md mt-8">
+        <input ref={inputRef} type="file" accept='.txt, text/plain' className='file-input file-input-accent' onChange={e => {
           const file = e.target.files?.item(0)
           if (file) {
             const reader = new FileReader()
@@ -94,34 +96,45 @@ function NormalPage({navigate}: {navigate: (path: string) => void}) {
             reader.readAsText(file)
           }
         }}/>
-        <select name="algorithm" >
-          <option value="UCS">UCS</option>
-          <option value="A*">A*</option>
-        </select>
+        <div className="form-control">
+          <label htmlFor="algorithm" className='label'>Algorithm</label>
+          <select name="algorithm" className='select select-accent select-sm'>
+            <option value="UCS">UCS</option>
+            <option value="A*">A*</option>
+          </select>
+        </div>
       
         {graph && cy && <>
-          <label htmlFor='start' >Start</label>
-          <select name="start" value={start} onChange={e => setStart(+e.target.value)}>
-            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
-          </select>
-          <label htmlFor='end'>End</label>
-          <select name="end" value={end} onChange={e => setEnd(+e.target.value)}>
-            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
-          </select>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="form-control">
+              <label htmlFor='start' className='label'>Start</label>
+              <select name="start" value={start} onChange={e => setStart(+e.target.value)} className='select select-accent select-sm'>
+                {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
+              </select>
+            </div>
+            <div className="form-control">
+              <label htmlFor='end' className='label'>End</label>
+              <select name="end" value={end} onChange={e => setEnd(+e.target.value)} className='select select-accent select-sm'>
+                {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
+              </select>
+            </div>
+          </div>
           { start && end &&
-          <button onClick={() => {
-            const solutionEdges = runAlgorithm(graph, graph.nodes.get(start)!, graph.nodes.get(end)!)
-            if (!solutionEdges) {
-              return alert('No solution found')
-            }
-            updateSolution(solutionEdges)
-          }} >Run</button>
+          <button 
+            className='btn btn-accent btn-sm mt-4'
+            onClick={() => {
+              const solutionEdges = runAlgorithm(graph, graph.nodes.get(start)!, graph.nodes.get(end)!)
+              if (!solutionEdges) {
+                return alert('No solution found')
+              }
+              updateSolution(solutionEdges)
+            }} >Run</button>
           }
         </> 
         }
       </div>
-      <div className="flex-1" ref={containerRef}></div>
-
+      <div className="w-full h-full border border-gray-200 rounded mt-4 mb-5 bg-gray-800" ref={containerRef}>
+      </div>
     </div>
   )
 }
