@@ -1,6 +1,7 @@
 import cytoscape from 'cytoscape'
 import { useRef, useState } from 'react'
 import { runAlgorithm } from '../algorithm'
+import BackButton from '../components/BackButton'
 import { Graph } from '../models/graph'
 
 function NormalPage({navigate}: {navigate: (path: string) => void}) {
@@ -71,7 +72,11 @@ function NormalPage({navigate}: {navigate: (path: string) => void}) {
 
   return (
     <div className='h-screen w-full max-w-screen-lg mx-auto flex flex-col items-center'>
-      <div className="flex flex-col w-full max-w-md mt-8">
+      <div className="my-4">
+        <BackButton onClick={() => navigate('home')}/>
+      </div>
+      <div className="flex flex-col w-full max-w-md">
+        
         <input ref={inputRef} type="file" accept='.txt, text/plain' className='file-input file-input-accent' onChange={e => {
           const file = e.target.files?.item(0)
           if (file) {
