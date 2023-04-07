@@ -33,7 +33,8 @@ export function runAlgorithm(graph: Graph<any, number>, start: Node<any, number>
   while (!queue.isEmpty()) {
     const searchNode = queue.dequeue()
     if (bestSolution && searchNode.value > bestSolution.value) {
-      continue
+      // No need to continue, we already have a better solution
+      break
     }
     
     const node = searchNode.node
