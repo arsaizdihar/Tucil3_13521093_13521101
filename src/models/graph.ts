@@ -12,9 +12,9 @@ export class Graph<TData, TWeight> {
     this.count = 0
   }
 
-  addNode(data: TData) {
+  addNode(data: TData, name?: string) {
     this.count++
-    const newNode = new Node<TData, TWeight>(this.count, data)
+    const newNode = new Node<TData, TWeight>(this.count, data, name)
     this.nodes.set(this.count, newNode)
     return newNode
   }
@@ -50,6 +50,7 @@ export class Graph<TData, TWeight> {
       elements.push({
         data: {
           id: node.idString,
+          label: node.name
         }
       })
     })
@@ -76,28 +77,36 @@ export class Graph<TData, TWeight> {
     const graph = new Graph<undefined, number>(true)
 
     const lines = str.split('\n')
+    
     if (lines.length < 1) {
       throw new Error('Invalid input')
     }
+    let lineIdx = 0
 
-    const nodesCount = lines[0].split(' ').length
-
-    if (nodesCount != lines.length) {
+    const nodeCount = parseInt(lines[lineIdx++])
+    if (isNaN(nodeCount)) {
+      throw new Error('Invalid nodes count')
+    }
+    if (lines.length < nodeCount * 2 + 1) {
       throw new Error('Invalid input')
     }
 
+    const names = lines.slice(lineIdx, lineIdx + nodeCount)
+
     const nodes: Node<undefined, number>[] = []
 
-    for (let i = 0; i < nodesCount; i++) {
-      nodes.push(graph.addNode(undefined))
+    for (let i = 0; i < nodeCount; i++) {
+      nodes.push(graph.addNode(undefined, names[i]))
     }
 
-    for (let i = 0; i < nodesCount; i++) {
-      const line = lines[i].split(' ')
-      for (let j = 0; j < nodesCount; j++) {
+    for (let i = 0; i < nodeCount; i++) {
+      const line = lines[i + nodeCount + 1].split(/\s+/)
+      for (let j = 0; j < nodeCount; j++) {
+        if (line[j] === '-') continue
         const weight = parseInt(line[j])
-        if (isNaN(weight)) {
-          throw new Error('Invalid input')
+        console.log(weight)
+        if (isNaN(weight) || weight <= 0) {
+          throw new Error(`Invalid weight at line ${i} column ${j}`)
         }
         if (weight > 0) {
           graph.addEdge(nodes[i], nodes[j], weight)

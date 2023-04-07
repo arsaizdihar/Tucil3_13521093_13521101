@@ -1,14 +1,20 @@
 export class Node<T, U> {
   id: number
   data : T
+  name: string
   adjacent: Map<number, {
     weight: U
     isSolution: boolean
   }>
-  constructor(id: number, data: T) {
+  constructor(id: number, data: T, name?: string) {
     this.id = id
     this.data = data
     this.adjacent = new Map()
+    if (name) {
+      this.name = name
+    } else {
+      this.name = id.toString()
+    }
   }
 
   addEdge(node: Node<T, U>, weight: U, isSolution = false) {

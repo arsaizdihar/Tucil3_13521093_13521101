@@ -23,9 +23,7 @@ function App() {
         {
           selector: 'node',
           style: {
-            label: 'data(id)',
-            'text-valign': 'center',
-            'text-halign': 'center',
+            label: 'data(label)',
           }
         },
         {
@@ -104,11 +102,11 @@ function App() {
         {graph && cy && <>
           <label htmlFor='start' >Start</label>
           <select name="start" value={start} onChange={e => setStart(+e.target.value)}>
-            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{nodeId}</option>)}
+            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
           </select>
           <label htmlFor='end'>End</label>
           <select name="end" value={end} onChange={e => setEnd(+e.target.value)}>
-            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{nodeId}</option>)}
+            {[...graph.nodes.keys()].map(nodeId => <option value={nodeId} key={nodeId}>{graph.nodes.get(nodeId)?.name}</option>)}
           </select>
           { start && end &&
           <button onClick={() => {
