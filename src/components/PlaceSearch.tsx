@@ -46,25 +46,26 @@ const PlaceSearch = (props: SearchProps) => {
 
       return (
         <li key={place_id} onClick={handleSelect(suggestion)}>
-          <strong>{main_text}</strong> <small>{secondary_text}</small>
+          <small>{main_text}</small>
         </li>
       )
     })
 
   return (
-    <div className="form-control w-full max-w-xs">
+    <div className="form-control w-full max-w-s relative">
       <label className="label">
         <span className="label-text">{props.searchLabel}</span>
       </label>
       <input
         placeholder={props.placeholder}
-        className="input input-bordered w-full max-w-xs"
+        className="input input-accent w-full max-w-s"
         value={value}
         onChange={e => setValue(e.target.value)}
         disabled={!ready}
       />
       {/* We can use the "status" to decide whether we should display the dropdown or not */}
-      {status === 'OK' && <ul>{renderSuggestions()}</ul>}
+      {status === 'OK' &&
+        <ul className={'menu absolute bottom-0 left-0 bg-base-200 menu-compact bordered'}>{renderSuggestions()}</ul>}
     </div>
   )
 }

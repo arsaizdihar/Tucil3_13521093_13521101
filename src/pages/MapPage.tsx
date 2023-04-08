@@ -20,6 +20,7 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
 
   const [source, setSource] = useState<LatLngCoordinate | null>(null)
   const [destination, setDestination] = useState<LatLngCoordinate | null>(null)
+  const [algorithm, setAlgorithm] = useState<'UCS' | 'A*'>('UCS')
 
   const graph = loadGraphFromMap()
 
@@ -35,29 +36,41 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
       return
     }
 
-    const result = runAlgorithm(graph, sourceNode, destNode, true)
+    const result = runAlgorithm(graph, sourceNode, destNode, algorithm === 'A*')
 
     console.log(result)
   }
 
   return (
-    <div className="h-screen w-full max-w-screen-lg mx-auto flex flex-col items-center">
-      <div className="my-4">
-        <BackButton onClick={() => navigate('home')}/>
-      </div>
-      <div className="flex flex-col w-full max-w-md">
+    <div className="h-screen w-full max-w-screen-2xl mx-auto flex flex-row items-center">
+      <div className="flex flex-col w-full max-w-md p-8">
+        <div className="my-4">
+          <BackButton onClick={() => navigate('home')}/>
+        </div>
         {!isLoaded ? <></> : (
-          <>
-            <PlaceSearch searchLabel="Apa tempat asal anda?" placeholder="Tempat asal" setResult={x => setSource(x)}/>
+          <div className={'mx-auto w-full'}>
+            <div className="form-control">
+              <label htmlFor="algorithm" className="label">Algoritma</label>
+              <select name="algorithm" className="select select-accent" value={algorithm}
+                onChange={e => setAlgorithm(e.target.value === 'UCS' ? 'UCS' : 'A*')}>
+                <option value="UCS">UCS</option>
+                <option value="A*">A*</option>
+              </select>
+            </div>
+            <PlaceSearch searchLabel="Apa tempat asal anda?" placeholder="Tempat asal"
+              setResult={x => setSource(x)}/>
             <PlaceSearch searchLabel="Apa tempat tujuan anda?" placeholder="Tempat tujuan"
               setResult={x => setDestination(x)}/>
-          </>
+
+            <button className="btn btn-primary max-w-xs my-4 btn-accent"
+              disabled={source === null || destination === null}
+              onClick={e => handleSearch()}>Mulai Pencarian
+            </button>
+
+          </div>
         )}
-        <button className="btn btn-primary" disabled={source === null || destination === null}
-          onClick={e => handleSearch()}>Mulai Pencarian
-        </button>
       </div>
-      {!isLoaded ? <></> : (
+      {!isLoaded ? <div className="w-full"></div> : (
         <GoogleMap mapContainerClassName="w-full h-full" center={center} zoom={14}/>
       )}
     </div>
