@@ -67,7 +67,7 @@ export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar
       if (nextNode && !searchNode.visited.has(nextNode)) {
         const fx = searchNode.fx + value.weight
         const hx = isAstar ? getHeuristic(nextNode, end) : 0
-        queue.enqueue(new SearchNode(nextNode, fx, searchNode.visited, hx))
+        queue.enqueue(new SearchNode(nextNode, fx, new Set(searchNode.visited), hx))
       }
     })
   }

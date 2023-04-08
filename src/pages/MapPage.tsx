@@ -6,6 +6,7 @@ import BackButton from '../components/BackButton'
 import {LatLngCoordinate} from '../models/coordinates'
 import {closestNode, loadGraphFromMap} from '../solver/map-solver'
 import {runAlgorithmRaw} from '../solver/algorithm'
+import MarkerOptions = google.maps.MarkerOptions
 
 function MapPage({navigate}: { navigate: (path: string) => void }) {
   const GMAPS_API_KEY = import.meta.env.VITE_GMAPS_API_KEY
@@ -13,7 +14,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
 
   const {isLoaded} = useJsApiLoader({
     googleMapsApiKey: GMAPS_API_KEY,
-    libraries
+    libraries,
+    region: 'ID'
   })
 
   const center = useMemo(() => ({lat: -6.89148, lng: 107.6084704}), [])
@@ -67,6 +69,14 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
     visible: true,
   }
 
+  const sourceOptions: MarkerOptions = {
+    title: 'Tempat awal'
+  }
+
+  const destOptions: MarkerOptions = {
+    title: 'Tempat tujuan'
+  }
+
   return (
     <div className="h-screen w-full max-w-screen-2xl mx-auto flex flex-row items-center">
       <div className="flex flex-col w-full max-w-md p-8">
@@ -84,9 +94,16 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
               </select>
             </div>
             <PlaceSearch searchLabel="Apa tempat asal anda?" placeholder="Tempat asal"
-              setResult={x => setSource(x)}/>
+              setResult={x => {
+                setSource(x)
+                setPaths(null)
+              }
+              }/>
             <PlaceSearch searchLabel="Apa tempat tujuan anda?" placeholder="Tempat tujuan"
-              setResult={x => setDestination(x)}/>
+              setResult={x => {
+                setDestination(x)
+                setPaths(null)
+              }}/>
 
             <button className="btn max-w-xs my-4 btn-accent"
               disabled={source === null || destination === null}
@@ -99,10 +116,10 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
       {!isLoaded ? <div className="w-full"></div> : (
         <GoogleMap mapContainerClassName="w-full h-full" center={center} zoom={14}>
           {source === null ? <></> : (
-            <MarkerF position={source}/>
+            <MarkerF position={source} options={sourceOptions}/>
           )}
           {destination === null ? <></> : (
-            <MarkerF position={destination}/>
+            <MarkerF position={destination} options={destOptions}/>
           )}
           {
             paths === null ? <></> : (

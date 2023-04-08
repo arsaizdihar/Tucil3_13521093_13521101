@@ -16,7 +16,7 @@ const PlaceSearch = (props: SearchProps) => {
     clearSuggestions,
   } = usePlacesAutocomplete({
     requestOptions: {
-      /* Define search scope here */
+      region: 'ID'
     },
     debounce: 300,
   })
@@ -30,10 +30,9 @@ const PlaceSearch = (props: SearchProps) => {
         clearSuggestions()
 
         // Get latitude and longitude via utility functions
-        getGeocode({address: description}).then((results) => {
+        getGeocode({address: description, region: 'ID'}).then((results) => {
           const {lat, lng} = getLatLng(results[0])
           props.setResult({lat, lng})
-          console.log({lat, lng})
         })
       }
 

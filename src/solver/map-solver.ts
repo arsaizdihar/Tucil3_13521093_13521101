@@ -1,5 +1,4 @@
 import {Graph} from '../models/graph'
-import bandung from '../maps/bandung.json'
 import {calculateHaversineDistance, LatLngCoordinate as Coordinate} from '../models/coordinates'
 import {Node} from '../models/node'
 
@@ -11,19 +10,22 @@ interface MapFormat {
 
 export const loadGraphFromMap = (): Graph<Coordinate, number> => {
   const graph = new Graph<Coordinate, number>()
-  const bandungMap = bandung as MapFormat
 
-  bandungMap.nodes.forEach(node => {
-    graph.addNodeWithId(node[0], {
-      lat: node[1],
-      lng: node[2]
+  fetch('/bandung.json').then(res => res.json()).then(data => {
+    const map = data as MapFormat
+
+    map!.nodes.forEach(node => {
+      graph.addNodeWithId(node[0], {
+        lat: node[1],
+        lng: node[2]
+      })
     })
-  })
 
-  bandungMap.edges.forEach(edge => {
-    const from = graph.nodes.get(edge[0])!
-    const to = graph.nodes.get(edge[1])!
-    graph.addEdge(from, to, edge[2])
+    map!.edges.forEach(edge => {
+      const from = graph.nodes.get(edge[0])!
+      const to = graph.nodes.get(edge[1])!
+      graph.addEdge(from, to, edge[2])
+    })
   })
 
   return graph
