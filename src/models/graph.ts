@@ -1,22 +1,72 @@
 import cytoscape from 'cytoscape'
-import { Node } from './node'
+import {Node} from './node'
 
 export class Graph<TData, TWeight> {
   nodes: Map<number, Node<TData, TWeight>>
   directed: boolean
   count: number
-    
+
   constructor(directed = false) {
     this.nodes = new Map()
     this.directed = directed
     this.count = 0
   }
 
+  static fromString(str: string) {
+    const graph = new Graph<undefined, number>(true)
+
+    const lines = str.split('\n')
+
+    if (lines.length < 1) {
+      throw new Error('Invalid input')
+    }
+    let lineIdx = 0
+
+    const nodeCount = parseInt(lines[lineIdx++])
+    if (isNaN(nodeCount)) {
+      throw new Error('Invalid nodes count')
+    }
+    if (lines.length < nodeCount * 2 + 1) {
+      throw new Error('Invalid input')
+    }
+
+    const names = lines.slice(lineIdx, lineIdx + nodeCount)
+
+    const nodes: Node<undefined, number>[] = []
+
+    for (let i = 0; i < nodeCount; i++) {
+      nodes.push(graph.addNode(undefined, names[i]))
+    }
+
+    for (let i = 0; i < nodeCount; i++) {
+      const line = lines[i + nodeCount + 1].split(/\s+/)
+      for (let j = 0; j < nodeCount; j++) {
+        if (line[j] === '-') continue
+        const weight = parseInt(line[j])
+        console.log(weight)
+        if (isNaN(weight) || weight <= 0) {
+          throw new Error(`Invalid weight at line ${i} column ${j}`)
+        }
+        if (weight > 0) {
+          graph.addEdge(nodes[i], nodes[j], weight)
+        }
+      }
+    }
+
+
+    return graph
+  }
+
+  addNodeWithId(id: number, data: TData, name?: string) {
+    this.count++
+    const newNode = new Node<TData, TWeight>(id, data, name)
+    this.nodes.set(id, newNode)
+    return newNode
+  }
+
   addNode(data: TData, name?: string) {
     this.count++
-    const newNode = new Node<TData, TWeight>(this.count, data, name)
-    this.nodes.set(this.count, newNode)
-    return newNode
+    return this.addNodeWithId(this.count, data, name)
   }
 
   addEdge(from: Node<TData, TWeight>, to: Node<TData, TWeight>, weight: TWeight, isSolution = false) {
@@ -69,50 +119,5 @@ export class Graph<TData, TWeight> {
     })
 
     return elements
-  }
-
-  static fromString(str: string) {
-    const graph = new Graph<undefined, number>(true)
-
-    const lines = str.split('\n')
-    
-    if (lines.length < 1) {
-      throw new Error('Invalid input')
-    }
-    let lineIdx = 0
-
-    const nodeCount = parseInt(lines[lineIdx++])
-    if (isNaN(nodeCount)) {
-      throw new Error('Invalid nodes count')
-    }
-    if (lines.length < nodeCount * 2 + 1) {
-      throw new Error('Invalid input')
-    }
-
-    const names = lines.slice(lineIdx, lineIdx + nodeCount)
-
-    const nodes: Node<undefined, number>[] = []
-
-    for (let i = 0; i < nodeCount; i++) {
-      nodes.push(graph.addNode(undefined, names[i]))
-    }
-
-    for (let i = 0; i < nodeCount; i++) {
-      const line = lines[i + nodeCount + 1].split(/\s+/)
-      for (let j = 0; j < nodeCount; j++) {
-        if (line[j] === '-') continue
-        const weight = parseInt(line[j])
-        console.log(weight)
-        if (isNaN(weight) || weight <= 0) {
-          throw new Error(`Invalid weight at line ${i} column ${j}`)
-        }
-        if (weight > 0) {
-          graph.addEdge(nodes[i], nodes[j], weight)
-        }
-      }
-    }
-    
-
-    return graph
   }
 }

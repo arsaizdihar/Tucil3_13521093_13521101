@@ -10,13 +10,17 @@
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.2.0",
+    "@react-google-maps/api": "^2.18.1",
     "cytoscape": "^3.23.0",
     "daisyui": "^2.51.5",
+    "haversine-distance": "^1.2.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "use-places-autocomplete": "^4.0.0"
   },
   "devDependencies": {
     "@types/cytoscape": "^3.19.9",
+    "@types/node": "^18.15.11",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.57.1",

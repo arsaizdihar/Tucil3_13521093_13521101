@@ -1,14 +1,30 @@
+import {ICompare, PriorityQueue} from '@datastructures-js/priority-queue'
+import {Graph} from '../models/graph'
+import {Node} from '../models/node'
 import {
-  ICompare,
-  PriorityQueue
-} from '@datastructures-js/priority-queue'
-import { Graph } from './models/graph'
-import { Node } from './models/node'
+  calculateEuclideanDIstance,
+  calculateHaversineDistance,
+  CartesianCoordinate,
+  LatLngCoordinate
+} from '../models/coordinates'
+
+type NodeC = Node<LatLngCoordinate | CartesianCoordinate, number>
+type GraphC = Graph<LatLngCoordinate | CartesianCoordinate, number>
+
+function getHeuristic(from: NodeC, to: NodeC): number {
+  if ('lat' in from.data && 'lat' in to.data) {
+    return calculateHaversineDistance(from.data, to.data)
+  } else if ('x' in from.data && 'x' in to.data) {
+    return calculateEuclideanDIstance(from.data, to.data)
+  }
+
+  return 0
+}
 
 class SearchNode {
-  visited: Set<Node<any, number>>
-  
-  constructor(public node: Node<any, number>, public fx: number, beforeVisited: Set<Node<any, number>>, public hx: number = 0) {
+  visited: Set<NodeC>
+
+  constructor(public node: NodeC, public fx: number, beforeVisited: Set<NodeC>, public hx: number = 0) {
     this.visited = new Set(beforeVisited)
     this.visited.add(node)
   }
@@ -23,7 +39,7 @@ const compareNodes: ICompare<SearchNode> = (a, b) => {
   return a.value - b.value
 }
 
-export function runAlgorithm(graph: Graph<any, number>, start: Node<any, number>, end: Node<any, number>, isAstar = false) {
+export function runAlgorithm(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
   const queue = new PriorityQueue(compareNodes)
 
   queue.enqueue(new SearchNode(start, 0, new Set()))
@@ -36,9 +52,9 @@ export function runAlgorithm(graph: Graph<any, number>, start: Node<any, number>
       // No need to continue, we already have a better solution
       break
     }
-    
+
     const node = searchNode.node
-    
+
     if (node.id === end.id) {
       if (!bestSolution || searchNode.value < bestSolution.value) {
         bestSolution = searchNode
@@ -50,7 +66,7 @@ export function runAlgorithm(graph: Graph<any, number>, start: Node<any, number>
       const nextNode = graph.nodes.get(key)
       if (nextNode && !searchNode.visited.has(nextNode)) {
         const fx = searchNode.fx + value.weight
-        const hx = isAstar ? getHeuristic(nextNode.id, end.id) : 0
+        const hx = isAstar ? getHeuristic(nextNode, end) : 0
         queue.enqueue(new SearchNode(nextNode, fx, searchNode.visited, hx))
       }
     })
@@ -75,8 +91,4 @@ function getEdgesFromResult(searchNode: SearchNode) {
   })
 
   return edges
-}
-
-export function getHeuristic(from: number, to: number) {
-  return 0
 }
