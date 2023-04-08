@@ -39,7 +39,7 @@ const compareNodes: ICompare<SearchNode> = (a, b) => {
   return a.value - b.value
 }
 
-export function runAlgorithm(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
+export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
   const queue = new PriorityQueue(compareNodes)
 
   queue.enqueue(new SearchNode(start, 0, new Set()))
@@ -71,6 +71,13 @@ export function runAlgorithm(graph: GraphC, start: NodeC, end: NodeC, isAstar = 
       }
     })
   }
+
+  return bestSolution
+}
+
+export function runAlgorithm(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
+  const bestSolution = runAlgorithmRaw(graph, start, end, isAstar)
+
   if (!bestSolution) {
     return null
   }

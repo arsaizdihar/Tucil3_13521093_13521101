@@ -1,14 +1,14 @@
-import {GoogleMap, useJsApiLoader} from '@react-google-maps/api'
+import {GoogleMap, MarkerF, PolylineF, useJsApiLoader} from '@react-google-maps/api'
 import {useMemo, useState} from 'react'
 import PlaceSearch from '../components/PlaceSearch'
 import {Libraries} from '@react-google-maps/api/dist/utils/make-load-script-url'
 import BackButton from '../components/BackButton'
 import {LatLngCoordinate} from '../models/coordinates'
 import {closestNode, loadGraphFromMap} from '../solver/map-solver'
-import {runAlgorithm} from '../solver/algorithm'
+import {runAlgorithmRaw} from '../solver/algorithm'
 
 function MapPage({navigate}: { navigate: (path: string) => void }) {
-  const GMAPS_API_KEY = 'AIzaSyBn8--ToWoS1keR1EsJdii5nZX2ZQGPfs4'
+  const GMAPS_API_KEY = import.meta.env.VITE_GMAPS_API_KEY
   const libraries: Libraries = ['places']
 
   const {isLoaded} = useJsApiLoader({
@@ -21,11 +21,13 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
   const [source, setSource] = useState<LatLngCoordinate | null>(null)
   const [destination, setDestination] = useState<LatLngCoordinate | null>(null)
   const [algorithm, setAlgorithm] = useState<'UCS' | 'A*'>('UCS')
+  const [paths, setPaths] = useState<LatLngCoordinate[] | null>(null)
 
   const graph = loadGraphFromMap()
 
   const handleSearch = () => {
     if (source === null || destination === null) {
+      setPaths(null)
       return
     }
 
@@ -33,12 +35,36 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
     const destNode = closestNode(graph, destination)
 
     if (sourceNode === null || destNode === null) {
+      setPaths(null)
       return
     }
 
-    const result = runAlgorithm(graph, sourceNode, destNode, algorithm === 'A*')
+    const result = runAlgorithmRaw(graph, sourceNode, destNode, algorithm === 'A*')
 
-    console.log(result)
+    if (result === null) {
+      setPaths(null)
+      return
+    }
+
+    const coordinatePaths: LatLngCoordinate[] = []
+    for (const path of result.visited.values()) {
+      if ('lat' in path.data) {
+        coordinatePaths.push(path.data)
+      }
+    }
+    setPaths(coordinatePaths)
+  }
+
+  const options = {
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.35,
+    clickable: false,
+    draggable: false,
+    editable: false,
+    visible: true,
   }
 
   return (
@@ -62,7 +88,7 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
             <PlaceSearch searchLabel="Apa tempat tujuan anda?" placeholder="Tempat tujuan"
               setResult={x => setDestination(x)}/>
 
-            <button className="btn btn-primary max-w-xs my-4 btn-accent"
+            <button className="btn max-w-xs my-4 btn-accent"
               disabled={source === null || destination === null}
               onClick={e => handleSearch()}>Mulai Pencarian
             </button>
@@ -71,7 +97,19 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
         )}
       </div>
       {!isLoaded ? <div className="w-full"></div> : (
-        <GoogleMap mapContainerClassName="w-full h-full" center={center} zoom={14}/>
+        <GoogleMap mapContainerClassName="w-full h-full" center={center} zoom={14}>
+          {source === null ? <></> : (
+            <MarkerF position={source}/>
+          )}
+          {destination === null ? <></> : (
+            <MarkerF position={destination}/>
+          )}
+          {
+            paths === null ? <></> : (
+              <PolylineF path={paths} options={options}/>
+            )
+          }
+        </GoogleMap>
       )}
     </div>
   )

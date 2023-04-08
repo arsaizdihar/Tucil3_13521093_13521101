@@ -12,7 +12,7 @@ interface MapFormat {
 export const loadGraphFromMap = (): Graph<Coordinate, number> => {
   const graph = new Graph<Coordinate, number>()
   const bandungMap = bandung as MapFormat
-  
+
   bandungMap.nodes.forEach(node => {
     graph.addNodeWithId(node[0], {
       lat: node[1],
