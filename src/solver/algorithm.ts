@@ -49,12 +49,14 @@ export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar
   queue.enqueue(new SearchNode(start, 0, new Set()))
 
   let bestSolution: SearchNode | null = null
+  let everythingElseBigger = false
 
-  while (!queue.isEmpty()) {
+  while (!queue.isEmpty() && !everythingElseBigger) {
     const searchNode = queue.dequeue()
     if (bestSolution && searchNode.value > bestSolution.value) {
       // No need to continue, we already have a better solution
-      break
+      everythingElseBigger = true
+      continue
     }
     
     const node = searchNode.node
