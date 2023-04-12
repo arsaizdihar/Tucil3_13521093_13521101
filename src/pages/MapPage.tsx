@@ -1,11 +1,11 @@
-import {GoogleMap, MarkerF, PolylineF, useJsApiLoader} from '@react-google-maps/api'
-import {useMemo, useState} from 'react'
-import PlaceSearch from '../components/PlaceSearch'
-import {Libraries} from '@react-google-maps/api/dist/utils/make-load-script-url'
+import { GoogleMap, MarkerF, PolylineF, useJsApiLoader } from '@react-google-maps/api'
+import { Libraries } from '@react-google-maps/api/dist/utils/make-load-script-url'
+import { useMemo, useState } from 'react'
 import BackButton from '../components/BackButton'
-import {LatLngCoordinate} from '../models/coordinates'
-import {closestNode, loadGraphFromMap} from '../solver/map-solver'
-import {runAlgorithmRaw} from '../solver/algorithm'
+import PlaceSearch from '../components/PlaceSearch'
+import { LatLngCoordinate } from '../models/coordinates'
+import { runAlgorithmRaw } from '../solver/algorithm'
+import { closestNode, loadGraphFromMap } from '../solver/map-solver'
 import MarkerOptions = google.maps.MarkerOptions
 
 function MapPage({navigate}: { navigate: (path: string) => void }) {
@@ -26,8 +26,9 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
   const [paths, setPaths] = useState<LatLngCoordinate[] | null>(null)
 
   const graph = loadGraphFromMap()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (source === null || destination === null) {
       setPaths(null)
       return
@@ -40,16 +41,16 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
       setPaths(null)
       return
     }
-
+    setIsLoading(true)
     const result = runAlgorithmRaw(graph, sourceNode, destNode, algorithm === 'A*')
-
-    if (result === null) {
+    setIsLoading(false)
+    if (result.solution === null) {
       setPaths(null)
       return
     }
 
     const coordinatePaths: LatLngCoordinate[] = []
-    for (const path of result.visited.values()) {
+    for (const path of result.solution.visited.values()) {
       if ('lat' in path.data) {
         coordinatePaths.push(path.data)
       }
@@ -78,7 +79,7 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
   }
 
   return (
-    <div className="h-screen w-full max-w-screen-2xl mx-auto flex flex-row items-center">
+    <div className="h-screen w-full max-w-screen-2xl mx-auto flex flex-col lg:flex-row items-center px-4 lg:space-x-4">
       <div className="flex flex-col w-full max-w-md p-8">
         <div className="my-4">
           <BackButton onClick={() => navigate('home')}/>
@@ -105,8 +106,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
                 setPaths(null)
               }}/>
 
-            <button className="btn max-w-xs my-4 btn-accent"
-              disabled={source === null || destination === null}
+            <button className={'btn max-w-xs my-4 btn-accent' + (isLoading ? ' loading' : '')}
+              disabled={source === null || destination === null || isLoading}
               onClick={e => handleSearch()}>Mulai Pencarian
             </button>
 

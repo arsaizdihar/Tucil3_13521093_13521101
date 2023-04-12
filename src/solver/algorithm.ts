@@ -1,21 +1,24 @@
-import {ICompare, PriorityQueue} from '@datastructures-js/priority-queue'
-import {Graph} from '../models/graph'
-import {Node} from '../models/node'
+import { ICompare, PriorityQueue } from '@datastructures-js/priority-queue'
 import {
-  calculateEuclideanDIstance,
-  calculateHaversineDistance,
-  CartesianCoordinate,
-  LatLngCoordinate
+  LatLngCoordinate,
+  calculateHaversineDistance
 } from '../models/coordinates'
+import { BasicGraph, Graph } from '../models/graph'
+import { BasicNode, Node } from '../models/node'
 
-type NodeC = Node<LatLngCoordinate | CartesianCoordinate, number>
-type GraphC = Graph<LatLngCoordinate | CartesianCoordinate, number>
+type NodeC = Node<LatLngCoordinate, number> | BasicNode
+type GraphC = Graph<LatLngCoordinate, number> | BasicGraph
 
-function getHeuristic(from: NodeC, to: NodeC): number {
-  if ('lat' in from.data && 'lat' in to.data) {
+function getHeuristic<T extends NodeC | BasicNode>(from: T, to: T): number {
+  if ('minEdge' in from.data && 'minEdge' in to.data) {
+    // if the nodes are the same, heuristic value is 0
+    if (from.id == to.id) return 0
+
+    // else, heuristic value is the minimum edge weight of the node
+    return from.data.minEdge
+  }
+  else if ('lat' in from.data && 'lat' in to.data) {
     return calculateHaversineDistance(from.data, to.data)
-  } else if ('x' in from.data && 'x' in to.data) {
-    return calculateEuclideanDIstance(from.data, to.data)
   }
 
   return 0
@@ -40,22 +43,21 @@ const compareNodes: ICompare<SearchNode> = (a, b) => {
 }
 
 export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
+  const startTime = performance.now()
   const queue = new PriorityQueue(compareNodes)
 
   queue.enqueue(new SearchNode(start, 0, new Set()))
 
   let bestSolution: SearchNode | null = null
 
-  let i = 0
 
   while (!queue.isEmpty()) {
-    i++
     const searchNode = queue.dequeue()
     if (bestSolution && searchNode.value > bestSolution.value) {
       // No need to continue, we already have a better solution
       break
     }
-
+    
     const node = searchNode.node
 
     if (node.id === end.id) {
@@ -75,16 +77,16 @@ export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar
     })
   }
   
-  return bestSolution
+  return {solution: bestSolution, time: performance.now() - startTime}
 }
 
 export function runAlgorithm(graph: GraphC, start: NodeC, end: NodeC, isAstar = false) {
   const bestSolution = runAlgorithmRaw(graph, start, end, isAstar)
 
-  if (!bestSolution) {
+  if (!bestSolution.solution) {
     return null
   }
-  return getEdgesFromResult(bestSolution)
+  return {...bestSolution, edges: getEdgesFromResult(bestSolution.solution)}
 }
 
 function getEdgesFromResult(searchNode: SearchNode) {

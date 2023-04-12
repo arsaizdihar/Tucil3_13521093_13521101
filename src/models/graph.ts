@@ -1,5 +1,7 @@
 import cytoscape from 'cytoscape'
-import {Node} from './node'
+import { BasicNode, BasicNodeData, Node } from './node'
+
+export type BasicGraph = Graph<BasicNodeData, number>
 
 export class Graph<TData, TWeight> {
   nodes: Map<number, Node<TData, TWeight>>
@@ -13,9 +15,9 @@ export class Graph<TData, TWeight> {
   }
 
   static fromString(str: string) {
-    const graph = new Graph<undefined, number>(true)
+    const graph = new Graph<BasicNodeData, number>(true)
 
-    const lines = str.split('\n')
+    const lines = str.split(/\r?\n/)
 
     if (lines.length < 1) {
       throw new Error('Invalid input')
@@ -32,19 +34,19 @@ export class Graph<TData, TWeight> {
 
     const names = lines.slice(lineIdx, lineIdx + nodeCount)
 
-    const nodes: Node<undefined, number>[] = []
+    const nodes: BasicNode[] = []
 
     for (let i = 0; i < nodeCount; i++) {
-      nodes.push(graph.addNode(undefined, names[i]))
+      nodes.push(graph.addNode({
+        minEdge: Infinity,
+      }, names[i]))
     }
 
     for (let i = 0; i < nodeCount; i++) {
       const line = lines[i + nodeCount + 1].split(/\s+/)
       for (let j = 0; j < nodeCount; j++) {
-        if (line[j] === '-') continue
         const weight = parseInt(line[j])
-        console.log(weight)
-        if (isNaN(weight) || weight <= 0) {
+        if (isNaN(weight) || weight < 0) {
           throw new Error(`Invalid weight at line ${i} column ${j}`)
         }
         if (weight > 0) {
@@ -52,8 +54,16 @@ export class Graph<TData, TWeight> {
         }
       }
     }
-
-
+    // calculate minimum edge weight of each node as node data for heuristik purpose
+    nodes.forEach((node) => {
+      let min = Infinity
+      node.adjacent.forEach((value) => {
+        if (value.weight < min) {
+          min = value.weight
+        }
+      })
+      node.data.minEdge = min
+    })
     return graph
   }
 
@@ -65,31 +75,13 @@ export class Graph<TData, TWeight> {
   }
 
   addNode(data: TData, name?: string) {
-    this.count++
-    return this.addNodeWithId(this.count, data, name)
+    return this.addNodeWithId(this.count+1, data, name)
   }
 
-  addEdge(from: Node<TData, TWeight>, to: Node<TData, TWeight>, weight: TWeight, isSolution = false) {
-    from.addEdge(to, weight, isSolution)
+  addEdge(from: Node<TData, TWeight>, to: Node<TData, TWeight>, weight: TWeight, ) {
+    from.addEdge(to, weight)
     if (!this.directed) {
-      to.addEdge(from, weight, isSolution)
-    }
-  }
-
-  markSolution(from: Node<TData, TWeight>, to: Node<TData, TWeight>) {
-    const edge = from.adjacent.get(to.id)
-    if (!edge) {
-      throw new Error('No edge between nodes')
-    }
-    edge.isSolution = true
-
-    if (!this.directed) {
-      const reverseEdge = to.adjacent.get(from.id)
-      if (!reverseEdge) {
-        edge.isSolution = false
-        throw new Error('No edge between nodes')
-      }
-      reverseEdge.isSolution = true
+      to.addEdge(from, weight)
     }
   }
 
@@ -107,12 +99,16 @@ export class Graph<TData, TWeight> {
 
     this.nodes.forEach((node) => {
       node.adjacent.forEach((value, key) => {
+        const neighbor = this.nodes.get(key)!
+        const undirected = neighbor.adjacent.get(node.id)?.weight === value.weight
         elements.push({
           data: {
             source: node.idString,
             target: key.toString(),
             weight: value.weight,
             id: `${node.idString},${key.toString()}`,
+            curve: undirected ? 'straight' : 'bezier',
+            arrow: undirected ? 'none' : 'triangle',
           }
         })
       })
