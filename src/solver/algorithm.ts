@@ -50,7 +50,6 @@ export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar
 
   let bestSolution: SearchNode | null = null
 
-
   while (!queue.isEmpty()) {
     const searchNode = queue.dequeue()
     if (bestSolution && searchNode.value > bestSolution.value) {
