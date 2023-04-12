@@ -8,10 +8,18 @@ import {
   LatLngCoordinate
 } from '../models/coordinates'
 
-type NodeC = Node<LatLngCoordinate | CartesianCoordinate, number>
-type GraphC = Graph<LatLngCoordinate | CartesianCoordinate, number>
+type NodeC = Node<LatLngCoordinate | CartesianCoordinate | undefined, number>
+type GraphC = Graph<LatLngCoordinate | CartesianCoordinate | undefined, number>
 
 function getHeuristic(from: NodeC, to: NodeC): number {
+  if (from.data === undefined || to.data === undefined) {
+    if (from.adjacent.size === 0) {
+      return 10**5 // arbitary large number
+    }
+  
+    return Math.min(...Array.from(from.adjacent.values(), x=> x.weight))
+  }
+
   if ('lat' in from.data && 'lat' in to.data) {
     return calculateHaversineDistance(from.data, to.data)
   } else if ('x' in from.data && 'x' in to.data) {
@@ -46,10 +54,7 @@ export function runAlgorithmRaw(graph: GraphC, start: NodeC, end: NodeC, isAstar
 
   let bestSolution: SearchNode | null = null
 
-  let i = 0
-
   while (!queue.isEmpty()) {
-    i++
     const searchNode = queue.dequeue()
     if (bestSolution && searchNode.value > bestSolution.value) {
       // No need to continue, we already have a better solution
