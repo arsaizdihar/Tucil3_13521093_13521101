@@ -76,8 +76,14 @@ npm install
 ```shell
 npm run build
 ```
-4. Run the program
+
+4. Add Google Maps API key
+
+- Copy .env.example to .env
+- Fill VITE_GMAPS_API_KEY variable with your own Google Maps API key
+
+5. Run the program
 ```shell
 npm run preview
 ```
-5. Open the browser and go to http://localhost:4173
+1. Open the browser and go to http://localhost:4173
