@@ -99,14 +99,20 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
               reader.onload = () => {
                 if (!reader.result) return
                 let graph: BasicGraph
-                if (typeof reader.result === 'string') {
-                  graph = Graph.fromString(reader.result)
-                } else {
-                  const arrayBuffer = reader.result as ArrayBuffer
-                  const uint8Array = new Uint8Array(arrayBuffer)
-                  const textDecoder = new TextDecoder()
-                  const text = textDecoder.decode(uint8Array)
-                  graph = Graph.fromString(text)
+                try {
+
+                  if (typeof reader.result === 'string') {
+                    graph = Graph.fromString(reader.result)
+                  } else {
+                    const arrayBuffer = reader.result as ArrayBuffer
+                    const uint8Array = new Uint8Array(arrayBuffer)
+                    const textDecoder = new TextDecoder()
+                    const text = textDecoder.decode(uint8Array)
+                    graph = Graph.fromString(text)
+                  }
+                } catch (e: any) {
+                  alert(e.message)
+                  return
                 }
                 setDistance(null)
                 setTimeExec(null)

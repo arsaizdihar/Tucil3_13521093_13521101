@@ -1,15 +1,31 @@
-n = int(input("Number of nodes: "))
+n = int(input("Banyak node: "))
 names = []
 for i in range(n):
     names.append(input(f"Node {i+1}: "))
 
-adj_mat = [["-" for _ in range(n)] for _ in range(n)]
+is_directed = input("Apakah graph directed? (Y/n)") != "n"
 
-for i in range(n):
-    for j in range(i+1, n):
-        weight = input(f"Weight between {names[i]} and {names[j]}: ")
-        adj_mat[i][j] = weight
-        adj_mat[j][i] = weight
+adj_mat = [["0" for _ in range(n)] for _ in range(n)]
+
+while True:
+    try:
+        for i, name in enumerate(names):
+            print(f"{i}. {name}")
+        start = input("Pilih node yang akan dijadikan asal edge (kosong jika selesai): ")
+        if start == "":
+            break
+        start = int(start)
+        end = input("Pilih node yang akan dijadikan tujuan edge (kosong jika selesai): ")
+        if end == "":
+            break
+        end = int(end)
+        weight = input("Masukkan weight dari edge: ")
+        adj_mat[start][end] = weight
+        if not is_directed:
+            adj_mat[end][start] = weight
+    except:
+        continue
+
 
 filename = input("File output: ")
 with open(filename, "w") as f:
