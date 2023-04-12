@@ -2,7 +2,7 @@ import cytoscape from 'cytoscape'
 import { useRef, useState } from 'react'
 import BackButton from '../components/BackButton'
 import { BasicGraph, Graph } from '../models/graph'
-import { runAlgorithm } from '../solver/algorithm'
+import { SearchNode, runAlgorithm } from '../solver/algorithm'
 
 function NormalPage({ navigate }: { navigate: (path: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -12,6 +12,8 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
   const [end, setEnd] = useState<number | undefined>(undefined)
   const [cy, setCy] = useState<cytoscape.Core | null>(null)
   const [isAStar, setIsAStar] = useState(false)
+  const [distance, setDistance] = useState<number | null>(null)
+  const [timeExec, setTimeExec] = useState<number | null>(null)
 
   function visualizeGraph(graph: BasicGraph) {
     if (!graph || !containerRef.current) return
@@ -58,7 +60,7 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
     setCy(cy)
   }
 
-  function updateSolution(solutionEdges: `${number},${number}`[]) {
+  function updateSolution(solution: SearchNode | null, solutionEdges: `${number},${number}`[], timeExecution: number) {
     if (!cy) return
 
     cy.edges().forEach((edge) => {
@@ -69,6 +71,14 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
         edge.removeClass('solution')
       }
     })
+
+
+    if (solution) {
+      setDistance(solution.fx)
+    } else {
+      setDistance(0)
+    }
+    setTimeExec(timeExecution)
   }
 
   return (
@@ -98,6 +108,8 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
                   const text = textDecoder.decode(uint8Array)
                   graph = Graph.fromString(text)
                 }
+                setDistance(null)
+                setTimeExec(null)
                 setGraph(graph)
                 setStart(1)
                 setEnd(graph.nodes.size)
@@ -127,7 +139,11 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
                 <select
                   name="start"
                   value={start}
-                  onChange={(e) => setStart(+e.target.value)}
+                  onChange={(e) => {
+                    setStart(+e.target.value)
+                    setDistance(null)
+                    setTimeExec(null)
+                  }}
                   className="select select-accent select-sm"
                 >
                   {[...graph.nodes.keys()].map((nodeId) => (
@@ -144,7 +160,11 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
                 <select
                   name="end"
                   value={end}
-                  onChange={(e) => setEnd(+e.target.value)}
+                  onChange={(e) => {
+                    setEnd(+e.target.value)
+                    setDistance(null)
+                    setTimeExec(null)
+                  }}
                   className="select select-accent select-sm"
                 >
                   {[...graph.nodes.keys()].map((nodeId) => (
@@ -168,7 +188,7 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
                   if (!solution) {
                     return alert('No solution found')
                   }
-                  updateSolution(solution.edges)
+                  updateSolution(solution.solution, solution.edges, solution.time)
                 }}
               >
                 Run
@@ -176,6 +196,15 @@ function NormalPage({ navigate }: { navigate: (path: string) => void }) {
             )}
           </>
         )}
+
+        {distance !== null && timeExec !== null ?  <div className="card w-full bg-base-100 shadow-l">
+          <div className="card-body">
+            <h3 className="card-title">Waktu Eksekusi</h3>
+            <p>{timeExec.toFixed(4)} ms</p>
+            <h3 className="card-title">Jarak</h3>
+            <p>{distance} satuan jarak</p>
+          </div>
+        </div> : <></>}
       </div>
       <div
         className="w-full aspect-video border border-gray-200 rounded mt-4 mb-5 bg-gray-800"

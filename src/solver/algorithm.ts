@@ -24,7 +24,7 @@ function getHeuristic<T extends NodeC | BasicNode>(from: T, to: T): number {
   return 0
 }
 
-class SearchNode {
+export class SearchNode {
   visited: Set<NodeC>
 
   constructor(public node: NodeC, public fx: number, beforeVisited: Set<NodeC>, public hx: number = 0) {

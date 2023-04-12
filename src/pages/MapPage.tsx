@@ -24,6 +24,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
   const [destination, setDestination] = useState<LatLngCoordinate | null>(null)
   const [algorithm, setAlgorithm] = useState<'UCS' | 'A*'>('UCS')
   const [paths, setPaths] = useState<LatLngCoordinate[] | null>(null)
+  const [distance, setDistance] = useState<number | null>(null)
+  const [timeExec, setTimeExec] = useState<number | null>(null)
 
   const graph = loadGraphFromMap()
   const [isLoading, setIsLoading] = useState(false)
@@ -31,6 +33,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
   const handleSearch = async () => {
     if (source === null || destination === null) {
       setPaths(null)
+      setDistance(null)
+      setTimeExec(null)
       return
     }
 
@@ -38,6 +42,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
     const destNode = closestNode(graph, destination)
 
     if (sourceNode === null || destNode === null) {
+      setDistance(null)
+      setTimeExec(null)
       setPaths(null)
       return
     }
@@ -45,6 +51,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
     const result = runAlgorithmRaw(graph, sourceNode, destNode, algorithm === 'A*')
     setIsLoading(false)
     if (result.solution === null) {
+      setDistance(null)
+      setTimeExec(null)
       setPaths(null)
       return
     }
@@ -56,6 +64,8 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
       }
     }
     setPaths(coordinatePaths)
+    setDistance(result.solution.fx)
+    setTimeExec(result.time)
   }
 
   const options = {
@@ -98,12 +108,16 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
               setResult={x => {
                 setSource(x)
                 setPaths(null)
+                setDistance(null)
+                setTimeExec(null)
               }
               }/>
             <PlaceSearch searchLabel="Apa tempat tujuan anda?" placeholder="Tempat tujuan"
               setResult={x => {
                 setDestination(x)
                 setPaths(null)
+                setDistance(null)
+                setTimeExec(null)
               }}/>
 
             <button className={'btn max-w-xs my-4 btn-accent' + (isLoading ? ' loading' : '')}
@@ -113,6 +127,16 @@ function MapPage({navigate}: { navigate: (path: string) => void }) {
 
           </div>
         )}
+
+        
+        {distance !== null && timeExec !== null ?  <div className="card w-full bg-base-100 shadow-l">
+          <div className="card-body">
+            <h3 className="card-title">Waktu Eksekusi</h3>
+            <p>{timeExec.toFixed(4)} ms</p>
+            <h3 className="card-title">Jarak</h3>
+            <p>{distance} meter</p>
+          </div>
+        </div> : <></>}
       </div>
       {!isLoaded ? <div className="w-full"></div> : (
         <GoogleMap mapContainerClassName="w-full h-full" center={center} zoom={14}>
